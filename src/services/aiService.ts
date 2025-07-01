@@ -88,13 +88,13 @@ class AIService {
     try {
       const conversationText = messages.map(m => m.content).join('\n');
       
-      const diaryPrompt = `다음 대화 내용을 바탕으로 감성적이고 아름다운 일기를 작성해주세요. 3-4개 문단으로, 마치 소설처럼 서정적으로 써주세요. 하루의 감정과 경험을 따뜻하게 정리해주세요:\n\n${conversationText}`;
-      
+           const diaryPrompt = `다음 대화 내용을 바탕으로 개인적이고 솔직한 일기를 작성해주세요. 일상적인 톤으로 오늘 하루의 경험과 감정을 자연스럽게 기록해주세요. 3-4개 문단으로 구성하되, 마치 내가 직접 쓴 일기처럼 편안하고 진솔하게 작성해주세요. 날짜나 제목 없이 본문 내용만 작성해주세요:\n\n${conversationText}`;
+
       const emotionPrompt = `다음 대화 내용의 감정을 분석하여 각 감정의 비율을 0-100 숫자로만 반환해주세요. 모든 비율의 합은 100이 되어야 합니다. 형식: happy:숫자,sad:숫자,angry:숫자,anxious:숫자,peaceful:숫자,tired:숫자\n\n${conversationText}`;
-      
-      const feedbackPrompt = `다음 대화 내용을 바탕으로 심리학적 관점에서 오늘의 감정 상태에 대한 따뜻하고 전문적인 피드백을 3-4문장으로 제공해주세요. 감정을 인정하고 이해하는 관점으로 작성해주세요:\n\n${conversationText}`;
-      
-      const advicePrompt = `다음 대화 내용을 바탕으로 마음의 치유와 회복을 위한 따뜻하고 실용적인 조언을 3-4문장으로 제공해주세요. 구체적이고 실행 가능한 조언으로 작성해주세요:\n\n${conversationText}`;
+
+      const feedbackPrompt = `다음 대화 내용을 바탕으로 심리학적 관점에서 오늘의 감정 패턴과 인지적 특징을 분석해주세요. 감정의 원인, 사고 패턴, 행동과의 연관성을 포함하여 객관적이고 전문적인 피드백을 4-5문장으로 제공해주세요:\n\n${conversationText}`;
+
+      const advicePrompt = `다음 대화 내용을 바탕으로 심리적 웰빙 향상을 위한 구체적이고 실행 가능한 전략을 제시해주세요. 인지행동치료, 마음챙김, 감정조절 기법 등을 활용한 실용적인 조언을 4-5문장으로 작성해주세요. 단계별 실행 방법도 포함해주세요:\n\n${conversationText}`;
 
       const [diaryResult, emotionResult, feedbackResult, adviceResult] = await Promise.all([
         this.model.generateContent(diaryPrompt),
