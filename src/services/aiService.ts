@@ -1,5 +1,5 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Message, EmotionAnalysis, DiaryResult } from '../types';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Message, EmotionAnalysis, DiaryResult } from "../types";
 
 // Get API key from environment variables
 const API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY;
@@ -11,7 +11,7 @@ class AIService {
   constructor() {
     if (API_KEY) {
       this.genAI = new GoogleGenerativeAI(API_KEY);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     }
   }
 
@@ -30,12 +30,12 @@ class AIService {
 
     try {
       const prompt = `다음 메시지에 대해 공감하고 위로하는 따뜻한 한 문장으로 답변해주세요. 너무 길지 않게, 자연스럽고 진심이 담긴 말로 해주세요: "${message}"`;
-      
+
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       return response.text().trim();
     } catch (error) {
-      console.error('AI response generation failed:', error);
+      console.error("AI response generation failed:", error);
       return "당신의 마음을 이해해요. 함께 있어드릴게요.";
     }
   }
@@ -57,28 +57,31 @@ class AIService {
           peaceful: 10,
           tired: 20,
         },
-        psychologyFeedback: "오늘은 다양한 감정을 경험한 하루였습니다. 특히 피로감과 우울감이 높게 나타났는데, 이는 스트레스가 누적된 상태일 가능성이 있어요. 자신의 감정을 인정하고 받아들이는 것이 첫 번째 단계입니다.",
-        advice: "잠시 숨을 고르며 자신을 돌아보는 시간을 가져보세요. 충분한 휴식과 함께 좋아하는 활동을 통해 마음의 균형을 찾아가시길 바랍니다. 작은 성취라도 스스로를 칭찬해주는 것을 잊지 마세요."
+        psychologyFeedback:
+          "오늘은 다양한 감정을 경험한 하루였습니다. 특히 피로감과 우울감이 높게 나타났는데, 이는 스트레스가 누적된 상태일 가능성이 있어요. 자신의 감정을 인정하고 받아들이는 것이 첫 번째 단계입니다.",
+        advice:
+          "잠시 숨을 고르며 자신을 돌아보는 시간을 가져보세요. 충분한 휴식과 함께 좋아하는 활동을 통해 마음의 균형을 찾아가시길 바랍니다. 작은 성취라도 스스로를 칭찬해주는 것을 잊지 마세요.",
       };
     }
 
     try {
-      const conversationText = messages.map(m => m.content).join('\n');
-      
-      const diaryPrompt = `다음 대화 내용을 바탕으로 감성적이고 아름다운 일기를 작성해주세요. 3-4개 문단으로, 마치 소설처럼 서정적으로 써주세요. 하루의 감정과 경험을 따뜻하게 정리해주세요:\n\n${conversationText}`;
-      
-      const emotionPrompt = `다음 대화 내용의 감정을 분석하여 각 감정의 비율을 0-100 숫자로만 반환해주세요. 모든 비율의 합은 100이 되어야 합니다. 형식: happy:숫자,sad:숫자,angry:숫자,anxious:숫자,peaceful:숫자,tired:숫자\n\n${conversationText}`;
-      
-      const feedbackPrompt = `다음 대화 내용을 바탕으로 심리학적 관점에서 오늘의 감정 상태에 대한 따뜻하고 전문적인 피드백을 3-4문장으로 제공해주세요. 감정을 인정하고 이해하는 관점으로 작성해주세요:\n\n${conversationText}`;
-      
-      const advicePrompt = `다음 대화 내용을 바탕으로 마음의 치유와 회복을 위한 따뜻하고 실용적인 조언을 3-4문장으로 제공해주세요. 구체적이고 실행 가능한 조언으로 작성해주세요:\n\n${conversationText}`;
+      const conversationText = messages.map((m) => m.content).join("\n");
 
-      const [diaryResult, emotionResult, feedbackResult, adviceResult] = await Promise.all([
-        this.model.generateContent(diaryPrompt),
-        this.model.generateContent(emotionPrompt),
-        this.model.generateContent(feedbackPrompt),
-        this.model.generateContent(advicePrompt),
-      ]);
+      const diaryPrompt = `다음 대화 내용을 바탕으로 개인적이고 솔직한 일기를 작성해주세요. 일상적인 톤으로 오늘 하루의 경험과 감정을 자연스럽게 기록해주세요. 3-4개 문단으로 구성하되, 마치 내가 직접 쓴 일기처럼 편안하고 진솔하게 작성해주세요. 날짜나 제목 없이 본문 내용만 작성해주세요:\n\n${conversationText}`;
+
+      const emotionPrompt = `다음 대화 내용의 감정을 분석하여 각 감정의 비율을 0-100 숫자로만 반환해주세요. 모든 비율의 합은 100이 되어야 합니다. 형식: happy:숫자,sad:숫자,angry:숫자,anxious:숫자,peaceful:숫자,tired:숫자\n\n${conversationText}`;
+
+      const feedbackPrompt = `다음 대화 내용을 바탕으로 심리학적 관점에서 오늘의 감정 패턴과 인지적 특징을 분석해주세요. 감정의 원인, 사고 패턴, 행동과의 연관성을 포함하여 객관적이고 전문적인 피드백을 4-5문장으로 제공해주세요:\n\n${conversationText}`;
+
+      const advicePrompt = `다음 대화 내용을 바탕으로 심리적 웰빙 향상을 위한 구체적이고 실행 가능한 전략을 제시해주세요. 인지행동치료, 마음챙김, 감정조절 기법 등을 활용한 실용적인 조언을 4-5문장으로 작성해주세요. 단계별 실행 방법도 포함해주세요:\n\n${conversationText}`;
+
+      const [diaryResult, emotionResult, feedbackResult, adviceResult] =
+        await Promise.all([
+          this.model.generateContent(diaryPrompt),
+          this.model.generateContent(emotionPrompt),
+          this.model.generateContent(feedbackPrompt),
+          this.model.generateContent(advicePrompt),
+        ]);
 
       const diary = (await diaryResult.response).text().trim();
       const emotionText = (await emotionResult.response).text().trim();
@@ -87,29 +90,36 @@ class AIService {
 
       // Parse emotion analysis
       const emotions: EmotionAnalysis = {
-        happy: 20, sad: 20, angry: 10, anxious: 15, peaceful: 15, tired: 20
+        happy: 20,
+        sad: 20,
+        angry: 10,
+        anxious: 15,
+        peaceful: 15,
+        tired: 20,
       };
 
       try {
-        const emotionPairs = emotionText.split(',');
-        emotionPairs.forEach(pair => {
-          const [emotion, value] = pair.split(':');
+        const emotionPairs = emotionText.split(",");
+        emotionPairs.forEach((pair) => {
+          const [emotion, value] = pair.split(":");
           if (emotion && value && emotions.hasOwnProperty(emotion.trim())) {
-            emotions[emotion.trim() as keyof EmotionAnalysis] = parseInt(value.trim());
+            emotions[emotion.trim() as keyof EmotionAnalysis] = parseInt(
+              value.trim()
+            );
           }
         });
       } catch (e) {
-        console.log('Failed to parse emotions, using defaults');
+        console.log("Failed to parse emotions, using defaults");
       }
 
       return {
         diary,
         emotions,
         psychologyFeedback: feedback,
-        advice
+        advice,
       };
     } catch (error) {
-      console.error('Diary generation failed:', error);
+      console.error("Diary generation failed:", error);
       throw error;
     }
   }
