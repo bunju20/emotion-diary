@@ -6,7 +6,7 @@
 
 ## 배포 링크
 
-https://celebrated-fox-e27d04.netlify.app/
+https://celebrated-fox-e27d04.netlify.app
 
 ## 🎯 페르소나 (Persona)
 
