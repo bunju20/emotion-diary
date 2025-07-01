@@ -40,6 +40,29 @@ class AIService {
     }
   }
 
+  async generateDiaryReply(diary: string): Promise<string> {
+    if (!this.model) {
+      // Mock response for demo purposes
+      const replies = [
+        "당신의 하루를 이렇게 솔직하게 나눠주셔서 정말 고마워요. 힘든 순간들도 있었지만, 그 모든 것을 견뎌내신 당신이 정말 대단해요. 오늘도 수고 많으셨어요. 💕",
+        "이런 진솔한 이야기를 들려주셔서 감사해요. 당신의 감정 하나하나가 소중하고, 그것을 표현해주신 용기가 아름다워요. 내일은 더 좋은 하루가 되길 바라요. 🌟",
+        "당신의 마음을 이해해요. 때로는 힘들고 지칠 수 있지만, 그럼에도 불구하고 하루하루를 살아가는 당신이 정말 멋져요. 항상 응원하고 있어요. 🤗"
+      ];
+      return replies[Math.floor(Math.random() * replies.length)];
+    }
+
+    try {
+      const prompt = `다음 일기에 대해 따뜻하고 진심어린 답장을 써주세요. 마치 가까운 친구나 가족이 답장해주는 것처럼, 공감하고 위로하며 격려하는 내용으로 3-4문장 정도로 작성해주세요. 이모지도 적절히 사용해주세요:\n\n"${diary}"`;
+      
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().trim();
+    } catch (error) {
+      console.error('Diary reply generation failed:', error);
+      return "당신의 하루를 함께 나눠주셔서 고마워요. 오늘도 정말 수고 많으셨어요. 💕";
+    }
+  }
+
   async generateDiaryResult(messages: Message[]): Promise<DiaryResult> {
     if (!this.model) {
       // Mock result for demo purposes

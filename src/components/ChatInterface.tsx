@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
+import { EmotionIndicator } from './EmotionIndicator';
 import { Message } from '../types';
 
 interface ChatInterfaceProps {
@@ -19,6 +20,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   showAiResponses
 }) => {
   const [inputValue, setInputValue] = useState('');
+  const [currentEmotion, setCurrentEmotion] = useState<string>('neutral');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,11 +32,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     scrollToBottom();
   }, [messages, showAiResponses]);
 
+  // Analyze emotion from input text
+  useEffect(() => {
+    if (inputValue.length > 5) {
+      const emotion = analyzeInputEmotion(inputValue);
+      setCurrentEmotion(emotion);
+    } else {
+      setCurrentEmotion('neutral');
+    }
+  }, [inputValue]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim() && !isProcessing) {
       onAddMessage(inputValue.trim());
       setInputValue('');
+      setCurrentEmotion('neutral');
       inputRef.current?.focus();
     }
   };
@@ -48,6 +61,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   return (
     <div className="flex flex-col h-full">
+      {/* Emotion Indicator */}
+      <div className="px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-gray-100">
+        <EmotionIndicator emotion={currentEmotion} />
+      </div>
+
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {messages.length === 0 ? (
@@ -62,6 +80,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               자유롭게 생각나는 것들을 이야기해보세요.<br />
               기쁜 일, 힘든 일, 무엇이든 좋아요.
             </p>
+            <div className="mt-6 text-4xl animate-bounce-gentle">😊</div>
           </div>
         ) : (
           <>
@@ -136,4 +155,27 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
     </div>
   );
+};
+
+// Helper function to analyze emotion from input text
+const analyzeInputEmotion = (text: string): string => {
+  const lowerText = text.toLowerCase();
+  
+  // Korean emotion keywords
+  const emotionKeywords = {
+    happy: ['좋아', '기뻐', '행복', '즐거', '웃음', '신나', '최고', '완벽', '사랑'],
+    sad: ['슬퍼', '우울', '눈물', '힘들', '외로', '그리워', '아파', '속상'],
+    angry: ['화나', '짜증', '열받', '분노', '미워', '싫어', '빡쳐'],
+    anxious: ['불안', '걱정', '두려', '무서', '떨려', '긴장', '스트레스'],
+    tired: ['피곤', '지쳐', '힘들', '졸려', '귀찮', '번거'],
+    peaceful: ['평온', '차분', '편안', '조용', '여유', '휴식']
+  };
+
+  for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
+    if (keywords.some(keyword => lowerText.includes(keyword))) {
+      return emotion;
+    }
+  }
+
+  return 'neutral';
 };
