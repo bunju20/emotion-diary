@@ -1,15 +1,57 @@
-import React from 'react';
-import { BookOpen, Lightbulb, Heart, MessageCircle, Sparkles } from 'lucide-react';
-import { DiaryResult as DiaryResultType } from '../types';
-import { EmotionChart } from './EmotionChart';
-import { DiaryReply } from './DiaryReply';
+import React from "react";
+import {
+  BookOpen,
+  Lightbulb,
+  Heart,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react";
+import { DiaryResult as DiaryResultType } from "../types";
+import { EmotionChart } from "./EmotionChart";
+import { DiaryReply } from "./DiaryReply";
 
 interface DiaryResultProps {
   result: DiaryResultType;
   onStartNew: () => void;
 }
 
-export const DiaryResult: React.FC<DiaryResultProps> = ({ result, onStartNew }) => {
+// 마크다운 텍스트를 HTML로 변환하는 간단한 함수
+const parseMarkdown = (text: string) => {
+  return (
+    text
+      // Bold text: **text** or __text__
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/__(.*?)__/g, "<strong>$1</strong>")
+      // Italic text: *text* or _text_
+      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      .replace(/_(.*?)_/g, "<em>$1</em>")
+      // Code: `code`
+      .replace(
+        /`(.*?)`/g,
+        '<code class="bg-white/30 px-1 rounded text-sm">$1</code>'
+      )
+      // Line breaks
+      .replace(/\n/g, "<br />")
+  );
+};
+
+// 마크다운 컴포넌트
+const MarkdownText: React.FC<{ children: string; className?: string }> = ({
+  children,
+  className = "",
+}) => {
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: parseMarkdown(children) }}
+    />
+  );
+};
+
+export const DiaryResult: React.FC<DiaryResultProps> = ({
+  result,
+  onStartNew,
+}) => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Diary Section */}
@@ -18,12 +60,17 @@ export const DiaryResult: React.FC<DiaryResultProps> = ({ result, onStartNew }) 
           <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
             <BookOpen className="w-5 h-5 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 font-korean">오늘의 일기</h2>
+          <h2 className="text-2xl font-bold text-gray-800 font-korean">
+            오늘의 일기
+          </h2>
         </div>
-        
+
         <div className="prose prose-gray max-w-none">
-          {result.diary.split('\n\n').map((paragraph, index) => (
-            <p key={index} className="font-korean text-gray-700 leading-relaxed mb-4 text-base">
+          {result.diary.split("\n\n").map((paragraph, index) => (
+            <p
+              key={index}
+              className="font-korean text-gray-700 leading-relaxed mb-4 text-base"
+            >
               {paragraph}
             </p>
           ))}
@@ -44,24 +91,28 @@ export const DiaryResult: React.FC<DiaryResultProps> = ({ result, onStartNew }) 
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
             <Heart className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 font-korean">심리 분석</h3>
+          <h3 className="text-lg font-semibold text-gray-800 font-korean">
+            심리 분석
+          </h3>
         </div>
-        <p className="font-korean text-gray-700 leading-relaxed">
+        <MarkdownText className="font-korean text-gray-700 leading-relaxed">
           {result.psychologyFeedback}
-        </p>
+        </MarkdownText>
       </div>
 
-      {/* Advice */}
+      {/* Advice - 마크다운 지원 추가 */}
       <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-white">
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <Lightbulb className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-lg font-semibold font-korean">오늘을 위한 조언</h3>
+          <h3 className="text-lg font-semibold font-korean">
+            오늘을 위한 조언
+          </h3>
         </div>
-        <p className="font-korean leading-relaxed opacity-90">
+        <MarkdownText className="font-korean leading-relaxed opacity-90">
           {result.advice}
-        </p>
+        </MarkdownText>
       </div>
 
       {/* Mood Summary Card */}
@@ -70,18 +121,24 @@ export const DiaryResult: React.FC<DiaryResultProps> = ({ result, onStartNew }) 
           <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 font-korean">오늘의 기분 요약</h3>
+          <h3 className="text-lg font-semibold text-gray-800 font-korean">
+            오늘의 기분 요약
+          </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-white/50 rounded-xl">
             <div className="text-2xl mb-2">{getMoodEmoji(result.emotions)}</div>
             <p className="text-sm font-korean text-gray-600">전체적인 기분</p>
-            <p className="text-xs font-korean text-gray-500 mt-1">{getMoodDescription(result.emotions)}</p>
+            <p className="text-xs font-korean text-gray-500 mt-1">
+              {getMoodDescription(result.emotions)}
+            </p>
           </div>
           <div className="text-center p-4 bg-white/50 rounded-xl">
             <div className="text-2xl mb-2">💪</div>
             <p className="text-sm font-korean text-gray-600">에너지 레벨</p>
-            <p className="text-xs font-korean text-gray-500 mt-1">{getEnergyLevel(result.emotions)}</p>
+            <p className="text-xs font-korean text-gray-500 mt-1">
+              {getEnergyLevel(result.emotions)}
+            </p>
           </div>
           <div className="text-center p-4 bg-white/50 rounded-xl">
             <div className="text-2xl mb-2">🌟</div>
@@ -106,42 +163,49 @@ export const DiaryResult: React.FC<DiaryResultProps> = ({ result, onStartNew }) 
 
 // Helper functions
 const getMoodEmoji = (emotions: any) => {
-  const maxEmotion = Object.entries(emotions).reduce((a, b) => 
-    emotions[a[0] as keyof typeof emotions] > emotions[b[0] as keyof typeof emotions] ? a : b
+  const maxEmotion = Object.entries(emotions).reduce((a, b) =>
+    emotions[a[0] as keyof typeof emotions] >
+    emotions[b[0] as keyof typeof emotions]
+      ? a
+      : b
   );
-  
+
   const emojiMap: { [key: string]: string } = {
-    happy: '😊',
-    sad: '😢',
-    angry: '😠',
-    anxious: '😰',
-    peaceful: '😌',
-    tired: '😴'
+    happy: "😊",
+    sad: "😢",
+    angry: "😠",
+    anxious: "😰",
+    peaceful: "😌",
+    tired: "😴",
   };
-  
-  return emojiMap[maxEmotion[0]] || '😊';
+
+  return emojiMap[maxEmotion[0]] || "😊";
 };
 
 const getMoodDescription = (emotions: any) => {
-  const maxEmotion = Object.entries(emotions).reduce((a, b) => 
-    emotions[a[0] as keyof typeof emotions] > emotions[b[0] as keyof typeof emotions] ? a : b
+  const maxEmotion = Object.entries(emotions).reduce((a, b) =>
+    emotions[a[0] as keyof typeof emotions] >
+    emotions[b[0] as keyof typeof emotions]
+      ? a
+      : b
   );
-  
+
   const descriptionMap: { [key: string]: string } = {
-    happy: '기분 좋은 하루',
-    sad: '조금 우울한 하루',
-    angry: '화가 났던 하루',
-    anxious: '불안했던 하루',
-    peaceful: '평온한 하루',
-    tired: '피곤했던 하루'
+    happy: "기분 좋은 하루",
+    sad: "조금 우울한 하루",
+    angry: "화가 났던 하루",
+    anxious: "불안했던 하루",
+    peaceful: "평온한 하루",
+    tired: "피곤했던 하루",
   };
-  
-  return descriptionMap[maxEmotion[0]] || '평범한 하루';
+
+  return descriptionMap[maxEmotion[0]] || "평범한 하루";
 };
 
 const getEnergyLevel = (emotions: any) => {
-  const energyScore = emotions.happy + emotions.peaceful - emotions.tired - emotions.sad;
-  if (energyScore > 20) return '높음';
-  if (energyScore > 0) return '보통';
-  return '낮음';
+  const energyScore =
+    emotions.happy + emotions.peaceful - emotions.tired - emotions.sad;
+  if (energyScore > 20) return "높음";
+  if (energyScore > 0) return "보통";
+  return "낮음";
 };
