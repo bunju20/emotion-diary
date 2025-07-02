@@ -74,9 +74,24 @@ export const RiveEmotionDisplay: React.FC<RiveEmotionDisplayProps> = ({
     if (rive && isLoaded) {
       console.log('Rive instance:', rive);
       console.log('Available state machines:', rive.stateMachineNames);
-      if (rive.stateMachineNames.length > 0) {
-        console.log('Using state machine:', rive.stateMachineNames[0]);
-      }
+      
+      // 각 State Machine의 Input들 확인
+      rive.stateMachineNames.forEach((smName, index) => {
+        console.log(`State Machine ${index}: ${smName}`);
+        try {
+          const stateMachine = rive.stateMachineInputs(smName);
+          console.log(`Inputs for ${smName}:`, stateMachine);
+          
+          // Input 이름들 출력
+          if (stateMachine) {
+            Object.keys(stateMachine).forEach(inputName => {
+              console.log(`  - Input: ${inputName}, Type: ${typeof stateMachine[inputName]}`);
+            });
+          }
+        } catch (error) {
+          console.log(`Error accessing inputs for ${smName}:`, error);
+        }
+      });
     }
   }, [rive, isLoaded]);
 
