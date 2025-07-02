@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
+import { RiveEmotionSelector } from './RiveEmotionSelector';
 import { Message } from '../types';
 import { aiService } from '../services/aiService';
 
@@ -21,6 +22,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
+  const [selectedEmotion, setSelectedEmotion] = useState<number>(1);
+  const [showEmotionSelector, setShowEmotionSelector] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +41,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const userMessage = inputValue.trim();
       onAddMessage(userMessage);
       setInputValue('');
+      setShowEmotionSelector(false); // 첫 메시지 후 감정 선택기 숨김
       
       // Generate immediate AI response
       setIsGeneratingResponse(true);
@@ -64,22 +68,49 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
+  const handleEmotionSelect = (emotion: number) => {
+    setSelectedEmotion(emotion);
+    
+    // 감정에 따른 자동 메시지 생성
+    const emotionMessages = {
+      0: "오늘 정말 짜증나는 일이 있었어요...",
+      1: "뭔가 애매하고 잘 모르겠는 기분이에요.",
+      2: "오늘 기분이 정말 좋아요!",
+      3: "너무 피곤하고 지쳐요..."
+    };
+    
+    const message = emotionMessages[emotion as keyof typeof emotionMessages];
+    setInputValue(message);
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-8 h-8 text-primary-500" />
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-primary-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2 font-korean">
+                오늘 하루는 어떠셨나요?
+              </h3>
+              <p className="text-gray-500 text-sm font-korean max-w-sm mx-auto leading-relaxed">
+                먼저 지금 기분을 선택해보세요.<br />
+                캐릭터가 당신의 감정에 반응할 거예요.
+              </p>
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2 font-korean">
-              오늘 하루는 어떠셨나요?
-            </h3>
-            <p className="text-gray-500 text-sm font-korean max-w-sm mx-auto leading-relaxed">
-              자유롭게 생각나는 것들을 이야기해보세요.<br />
-              기쁜 일, 힘든 일, 무엇이든 좋아요.
-            </p>
+            
+            {/* 감정 선택기 */}
+            {showEmotionSelector && (
+              <div className="max-w-md mx-auto">
+                <RiveEmotionSelector 
+                  onEmotionSelect={handleEmotionSelect}
+                  selectedEmotion={selectedEmotion}
+                />
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -137,7 +168,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={messages.length === 0 ? "예: 오늘 너무 피곤했어..." : "더 이야기해주세요..."}
+              placeholder={messages.length === 0 ? "위에서 감정을 선택하거나 직접 입력해보세요..." : "더 이야기해주세요..."}
               disabled={isProcessing || isGeneratingResponse}
               className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent font-korean text-sm disabled:opacity-50"
             />
