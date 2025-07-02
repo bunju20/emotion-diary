@@ -15,6 +15,15 @@ class AIService {
     }
   }
 
+  // Clean response to remove quotes and unwanted formatting
+  private cleanResponse(text: string): string {
+    return text
+      .replace(/^["']|["']$/g, '') // Remove quotes at start/end
+      .replace(/^"|"$/g, '') // Remove double quotes at start/end
+      .replace(/^'|'$/g, '') // Remove single quotes at start/end
+      .trim();
+  }
+
   async generateFollowUpResponse(message: string, messageCount: number): Promise<string> {
     if (!this.model) {
       // Mock responses for demo purposes
@@ -34,7 +43,7 @@ class AIService {
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      return response.text().trim();
+      return this.cleanResponse(response.text());
     } catch (error) {
       console.error("Follow-up response generation failed:", error);
       return "더 자세히 이야기해주실 수 있나요?";
@@ -57,7 +66,7 @@ class AIService {
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      return response.text().trim();
+      return this.cleanResponse(response.text());
     } catch (error) {
       console.error("Diary reply generation failed:", error);
       return "당신의 하루를 함께 나눠주셔서 고마워요. 오늘도 정말 수고 많으셨어요.";
@@ -123,10 +132,10 @@ ${conversationText}`;
           this.model.generateContent(advicePrompt),
         ]);
 
-      const diary = (await diaryResult.response).text().trim();
-      const emotionText = (await emotionResult.response).text().trim();
-      const feedback = (await feedbackResult.response).text().trim();
-      const advice = (await adviceResult.response).text().trim();
+      const diary = this.cleanResponse((await diaryResult.response).text());
+      const emotionText = this.cleanResponse((await emotionResult.response).text());
+      const feedback = this.cleanResponse((await feedbackResult.response).text());
+      const advice = this.cleanResponse((await adviceResult.response).text());
 
       // Parse emotion analysis
       const emotions: EmotionAnalysis = {
