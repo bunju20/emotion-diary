@@ -4,15 +4,11 @@ import { User, Heart } from 'lucide-react';
 interface MessageBubbleProps {
   content: string;
   isUser: boolean;
-  aiResponse?: string;
-  showAiResponse?: boolean;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   content,
-  isUser,
-  aiResponse,
-  showAiResponse = false
+  isUser
 }) => {
   return (
     <div className="animate-fade-in">
@@ -40,20 +36,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         </div>
       </div>
-
-      {/* AI Response */}
-      {showAiResponse && aiResponse && isUser && (
-        <div className="flex justify-start mb-6">
-          <div className="flex items-start space-x-2 max-w-xs sm:max-w-md lg:max-w-lg animate-slide-up">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center mt-1">
-              <Heart className="w-4 h-4 text-white" />
-            </div>
-            <div className="px-4 py-3 bg-gradient-to-r from-primary-50 to-primary-100 text-primary-800 rounded-2xl rounded-bl-md border border-primary-200">
-              <p className="text-sm font-korean leading-relaxed italic">{aiResponse}</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

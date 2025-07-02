@@ -7,7 +7,7 @@ import { aiService } from '../services/aiService';
 
 interface ChatInterfaceProps {
   messages: Message[];
-  onAddMessage: (content: string) => void;
+  onAddMessage: (content: string, isAI?: boolean) => void;
   onFinishDay: () => void;
   isProcessing: boolean;
   showAiResponses: boolean;
@@ -32,7 +32,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, showAiResponses, isGeneratingResponse]);
+  }, [messages, isGeneratingResponse]);
 
   // Analyze emotion from input text
   useEffect(() => {
@@ -59,12 +59,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         
         // Add AI response as a message
         setTimeout(() => {
-          const aiMessage: Message = {
-            id: Date.now().toString() + '_ai',
-            content: aiResponse,
-            timestamp: new Date(),
-            isAI: true
-          };
           onAddMessage(aiResponse, true); // Pass true to indicate it's an AI message
           setIsGeneratingResponse(false);
           inputRef.current?.focus();
@@ -112,8 +106,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 key={message.id}
                 content={message.content}
                 isUser={!message.isAI}
-                aiResponse={message.aiResponse}
-                showAiResponse={showAiResponses}
               />
             ))}
             {isGeneratingResponse && (
@@ -178,7 +170,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </button>
         </form>
 
-        {messages.length > 2 && !showAiResponses && !isProcessing && !isGeneratingResponse && (
+        {messages.length > 2 && !isProcessing && !isGeneratingResponse && (
           <div className="flex justify-center mt-4">
             <button
               onClick={onFinishDay}

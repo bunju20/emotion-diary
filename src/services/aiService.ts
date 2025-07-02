@@ -41,31 +41,6 @@ class AIService {
     }
   }
 
-  async generateEmpathyResponse(message: string): Promise<string> {
-    if (!this.model) {
-      // Mock response for demo purposes
-      const responses = [
-        "정말 힘든 하루였겠네요. 고생 많았어요.",
-        "그런 일이 있으셨군요. 마음이 많이 무거우셨을 것 같아요.",
-        "충분히 이해해요. 때로는 그런 감정을 느끼는 것이 자연스러워요.",
-        "당신의 마음을 들어주게 되어 고마워요. 혼자가 아니에요.",
-        "오늘 하루도 잘 견뎌내신 당신이 정말 대단해요.",
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
-    }
-
-    try {
-      const prompt = `다음 메시지에 대해 공감하고 위로하는 따뜻한 한 문장으로 답변해주세요. 너무 길지 않게, 자연스럽고 진심이 담긴 말로 해주세요: "${message}"`;
-
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
-    } catch (error) {
-      console.error("AI response generation failed:", error);
-      return "당신의 마음을 이해해요. 함께 있어드릴게요.";
-    }
-  }
-
   async generateDiaryReply(diary: string): Promise<string> {
     if (!this.model) {
       // Mock response for demo purposes
@@ -116,7 +91,9 @@ class AIService {
     }
 
     try {
-      const conversationText = messages.map((m) => m.content).join("\n");
+      // Filter out AI messages for diary generation
+      const userMessages = messages.filter(m => !m.isAI);
+      const conversationText = userMessages.map((m) => m.content).join("\n");
 
       const diaryPrompt = `다음 대화 내용을 바탕으로 개인적이고 솔직한 일기를 작성해주세요. 
 

@@ -10,7 +10,6 @@ function App() {
   const [currentView, setCurrentView] = useState<'chat' | 'result'>('chat');
   const [diaryResult, setDiaryResult] = useState<DiaryResultType | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showAiResponses, setShowAiResponses] = useState(false);
 
   const addMessage = (content: string, isAI: boolean = false) => {
     const newMessage: Message = {
@@ -28,40 +27,14 @@ function App() {
     setIsProcessing(true);
     
     try {
-      // Generate AI responses for user messages only
-      const userMessages = messages.filter(m => !m.isAI);
-      const messagesWithResponses = await Promise.all(
-        userMessages.map(async (message) => {
-          const aiResponse = await aiService.generateEmpathyResponse(message.content);
-          return { ...message, aiResponse };
-        })
-      );
-      
-      // Update messages with AI responses
-      setMessages(prev => prev.map(msg => {
-        if (msg.isAI) return msg;
-        const messageWithResponse = messagesWithResponses.find(m => m.id === msg.id);
-        return messageWithResponse || msg;
-      }));
-      
-      setShowAiResponses(true);
-      
-      // Wait a bit for user to read AI responses
-      setTimeout(async () => {
-        try {
-          const result = await aiService.generateDiaryResult(messagesWithResponses);
-          setDiaryResult(result);
-          setCurrentView('result');
-        } catch (error) {
-          console.error('Failed to generate diary result:', error);
-          // Handle error gracefully
-        } finally {
-          setIsProcessing(false);
-        }
-      }, 3000);
-      
+      // Generate diary result directly from all messages
+      const result = await aiService.generateDiaryResult(messages);
+      setDiaryResult(result);
+      setCurrentView('result');
     } catch (error) {
-      console.error('Failed to process day:', error);
+      console.error('Failed to generate diary result:', error);
+      // Handle error gracefully
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -70,7 +43,6 @@ function App() {
     setMessages([]);
     setDiaryResult(null);
     setCurrentView('chat');
-    setShowAiResponses(false);
   };
 
   return (
@@ -84,7 +56,7 @@ function App() {
             onAddMessage={addMessage}
             onFinishDay={finishDay}
             isProcessing={isProcessing}
-            showAiResponses={showAiResponses}
+            showAiResponses={false}
           />
         ) : (
           diaryResult && (

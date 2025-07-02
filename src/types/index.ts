@@ -2,7 +2,6 @@ export interface Message {
   id: string;
   content: string;
   timestamp: Date;
-  aiResponse?: string;
   isAI?: boolean;
 }
 
