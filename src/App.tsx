@@ -12,11 +12,12 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAiResponses, setShowAiResponses] = useState(false);
 
-  const addMessage = (content: string) => {
+  const addMessage = (content: string, isAI: boolean = false) => {
     const newMessage: Message = {
-      id: Date.now().toString(),
+      id: Date.now().toString() + (isAI ? '_ai' : ''),
       content,
       timestamp: new Date(),
+      isAI
     };
     setMessages(prev => [...prev, newMessage]);
   };
@@ -27,15 +28,22 @@ function App() {
     setIsProcessing(true);
     
     try {
-      // Generate AI responses for each message
+      // Generate AI responses for user messages only
+      const userMessages = messages.filter(m => !m.isAI);
       const messagesWithResponses = await Promise.all(
-        messages.map(async (message) => {
+        userMessages.map(async (message) => {
           const aiResponse = await aiService.generateEmpathyResponse(message.content);
           return { ...message, aiResponse };
         })
       );
       
-      setMessages(messagesWithResponses);
+      // Update messages with AI responses
+      setMessages(prev => prev.map(msg => {
+        if (msg.isAI) return msg;
+        const messageWithResponse = messagesWithResponses.find(m => m.id === msg.id);
+        return messageWithResponse || msg;
+      }));
+      
       setShowAiResponses(true);
       
       // Wait a bit for user to read AI responses

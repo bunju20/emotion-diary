@@ -16,7 +16,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   return (
     <div className="animate-fade-in">
-      {/* User Message */}
+      {/* Message */}
       <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
         <div className="flex items-start space-x-2 max-w-xs sm:max-w-md lg:max-w-lg">
           {!isUser && (
@@ -42,7 +42,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       </div>
 
       {/* AI Response */}
-      {showAiResponse && aiResponse && (
+      {showAiResponse && aiResponse && isUser && (
         <div className="flex justify-start mb-6">
           <div className="flex items-start space-x-2 max-w-xs sm:max-w-md lg:max-w-lg animate-slide-up">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center mt-1">

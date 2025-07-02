@@ -3,6 +3,7 @@ import { Send, Sparkles } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
 import { EmotionIndicator } from './EmotionIndicator';
 import { Message } from '../types';
+import { aiService } from '../services/aiService';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -21,6 +22,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [currentEmotion, setCurrentEmotion] = useState<string>('neutral');
+  const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,7 +32,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, showAiResponses]);
+  }, [messages, showAiResponses, isGeneratingResponse]);
 
   // Analyze emotion from input text
   useEffect(() => {
@@ -42,13 +44,35 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   }, [inputValue]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputValue.trim() && !isProcessing) {
-      onAddMessage(inputValue.trim());
+    if (inputValue.trim() && !isProcessing && !isGeneratingResponse) {
+      const userMessage = inputValue.trim();
+      onAddMessage(userMessage);
       setInputValue('');
       setCurrentEmotion('neutral');
-      inputRef.current?.focus();
+      
+      // Generate immediate AI response
+      setIsGeneratingResponse(true);
+      try {
+        const aiResponse = await aiService.generateFollowUpResponse(userMessage, messages.length);
+        
+        // Add AI response as a message
+        setTimeout(() => {
+          const aiMessage: Message = {
+            id: Date.now().toString() + '_ai',
+            content: aiResponse,
+            timestamp: new Date(),
+            isAI: true
+          };
+          onAddMessage(aiResponse, true); // Pass true to indicate it's an AI message
+          setIsGeneratingResponse(false);
+          inputRef.current?.focus();
+        }, 1000);
+      } catch (error) {
+        console.error('Failed to generate AI response:', error);
+        setIsGeneratingResponse(false);
+      }
     }
   };
 
@@ -80,7 +104,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               자유롭게 생각나는 것들을 이야기해보세요.<br />
               기쁜 일, 힘든 일, 무엇이든 좋아요.
             </p>
-            <div className="mt-6 text-4xl animate-bounce-gentle">😊</div>
           </div>
         ) : (
           <>
@@ -88,11 +111,27 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <MessageBubble
                 key={message.id}
                 content={message.content}
-                isUser={true}
+                isUser={!message.isAI}
                 aiResponse={message.aiResponse}
                 showAiResponse={showAiResponses}
               />
             ))}
+            {isGeneratingResponse && (
+              <div className="flex justify-start">
+                <div className="flex items-start space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce"></div>
+                  </div>
+                  <div className="px-4 py-3 bg-gray-100 rounded-2xl rounded-bl-md">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             {isProcessing && (
               <div className="flex justify-start">
                 <div className="flex items-start space-x-2">
@@ -124,14 +163,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={messages.length === 0 ? "예: 오늘 일이 너무 많아서 피곤했어..." : "계속 이야기해보세요..."}
-              disabled={isProcessing}
+              placeholder={messages.length === 0 ? "예: 오늘 일이 너무 많아서 피곤했어..." : "더 이야기해주세요..."}
+              disabled={isProcessing || isGeneratingResponse}
               className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent font-korean text-sm disabled:opacity-50"
             />
           </div>
           <button
             type="submit"
-            disabled={!inputValue.trim() || isProcessing}
+            disabled={!inputValue.trim() || isProcessing || isGeneratingResponse}
             className="px-6 py-3 bg-primary-500 text-white rounded-2xl hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2"
           >
             <Send className="w-4 h-4" />
@@ -139,7 +178,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </button>
         </form>
 
-        {messages.length > 0 && !showAiResponses && !isProcessing && (
+        {messages.length > 2 && !showAiResponses && !isProcessing && !isGeneratingResponse && (
           <div className="flex justify-center mt-4">
             <button
               onClick={onFinishDay}
