@@ -24,38 +24,6 @@ class AIService {
       .trim();
   }
 
-  // 메시지에서 감정을 분석하여 0-3 값으로 반환
-  async analyzeMessageEmotion(message: string): Promise<number> {
-    if (!this.model) {
-      // Mock emotion analysis for demo
-      const emotions = [0, 1, 2, 3];
-      return emotions[Math.floor(Math.random() * emotions.length)];
-    }
-
-    try {
-      const prompt = `다음 메시지의 감정을 분석하여 숫자 하나만 반환해주세요:
-      0 = 짜증, 화남, 분노
-      1 = 의문, 혼란, 애매함
-      2 = 행복, 기쁨, 만족
-      3 = 피곤, 지침, 우울
-
-      메시지: "${message}"
-      
-      숫자만 반환하세요 (0, 1, 2, 3 중 하나):`;
-
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const emotionText = this.cleanResponse(response.text());
-      
-      // 숫자 추출
-      const emotionNumber = parseInt(emotionText.match(/[0-3]/)?.[0] || '1');
-      return Math.max(0, Math.min(3, emotionNumber)); // 0-3 범위로 제한
-    } catch (error) {
-      console.error("Emotion analysis failed:", error);
-      return 1; // 기본값: 의문
-    }
-  }
-
   async generateFollowUpResponse(message: string, messageCount: number): Promise<string> {
     if (!this.model) {
       // Mock responses for demo purposes

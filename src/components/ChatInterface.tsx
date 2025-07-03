@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
-import { RiveEmotionDisplay } from './RiveEmotionDisplay';
 import { Message } from '../types';
 import { aiService } from '../services/aiService';
 
@@ -22,7 +21,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
-  const [currentEmotion, setCurrentEmotion] = useState<number>(1); // 기본값: 의문
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -41,19 +39,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       onAddMessage(userMessage);
       setInputValue('');
       
-      // 메시지 감정 분석 및 캐릭터 업데이트
+      // AI 응답 생성
       setIsGeneratingResponse(true);
       try {
-        // 감정 분석과 AI 응답을 병렬로 처리
-        const [emotion, aiResponse] = await Promise.all([
-          aiService.analyzeMessageEmotion(userMessage),
-          aiService.generateFollowUpResponse(userMessage, messages.length)
-        ]);
+        const aiResponse = await aiService.generateFollowUpResponse(userMessage, messages.length);
         
-        // 감정 업데이트
-        setCurrentEmotion(emotion);
-        
-        // AI 응답 추가
         setTimeout(() => {
           onAddMessage(aiResponse, true);
           setIsGeneratingResponse(false);
@@ -78,38 +68,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {messages.length === 0 ? (
-          <div className="space-y-6">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-primary-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2 font-korean">
-                오늘 하루는 어떠셨나요?
-              </h3>
-              <p className="text-gray-500 text-sm font-korean max-w-sm mx-auto leading-relaxed">
-                자유롭게 생각나는 것들을 이야기해보세요.<br />
-                AI가 당신의 감정을 분석해서 캐릭터가 반응할 거예요.
-              </p>
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles className="w-10 h-10 text-primary-500" />
             </div>
-            
-            {/* 감정 표시 캐릭터 */}
-            <div className="max-w-sm mx-auto">
-              <RiveEmotionDisplay 
-                currentEmotion={currentEmotion}
-                className="w-full h-32"
-              />
-            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-3 font-korean">
+              오늘 하루는 어떠셨나요?
+            </h3>
+            <p className="text-gray-500 text-sm font-korean max-w-md mx-auto leading-relaxed">
+              자유롭게 생각나는 것들을 이야기해보세요.<br />
+              AI가 당신의 이야기를 들어드릴게요.
+            </p>
           </div>
         ) : (
           <>
-            {/* 대화 중일 때도 감정 캐릭터 표시 */}
-            <div className="flex justify-center mb-4">
-              <RiveEmotionDisplay 
-                currentEmotion={currentEmotion}
-                className="w-24 h-24"
-              />
-            </div>
-            
             {messages.map((message) => (
               <MessageBubble
                 key={message.id}
